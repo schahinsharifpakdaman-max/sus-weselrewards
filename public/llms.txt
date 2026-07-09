@@ -1,0 +1,9 @@
+# SuS Wesel Prämien-System
+
+> Digitales Punkte- und Prämiensystem der Seniorenmannschaften von SuS Wesel 1920/75 e.V. — Training, Spieltag, Aufstiegstopf und Kader in einer App.
+
+Die App ist ein internes Vereinstool. Öffentlich erreichbar ist nur die Startseite; alle weiteren Bereiche (Dashboard, Konto, Kader, Training, Spieltag, Aufstiegstopf, Einstellungen) sind nach Login sichtbar.
+
+## Pages
+
+- [Startseite](/): Einstieg in das Prämien-System mit Weiterleitung zum Login oder Dashboard.
