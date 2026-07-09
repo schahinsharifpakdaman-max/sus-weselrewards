@@ -14,7 +14,15 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Plus, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/kader")({
-  head: () => ({ meta: [{ title: "Kader — SuS Wesel Prämien" }] }),
+  head: () => ({
+    meta: [
+      { title: "Kader — SuS Wesel Prämien" },
+      { name: "description", content: "Kaderverwaltung der Seniorenmannschaften: Spieler und Trainer anlegen, Teams zuordnen und Aufstiegstopf-Beteiligung pflegen." },
+      { property: "og:title", content: "Kader — SuS Wesel Prämien" },
+      { property: "og:description", content: "Kaderverwaltung der Seniorenmannschaften: Spieler und Trainer anlegen, Teams zuordnen und Aufstiegstopf-Beteiligung pflegen." },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: KaderPage,
 });
 

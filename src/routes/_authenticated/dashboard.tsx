@@ -7,7 +7,15 @@ import { useMyProfile } from "@/hooks/use-session";
 import { Progress } from "@/components/ui/progress";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — SuS Wesel Prämien" }] }),
+  head: () => ({
+    meta: [
+      { title: "Dashboard — SuS Wesel Prämien" },
+      { name: "description", content: "Persönliches Dashboard mit aktuellem Punktestand, letzten Buchungen und Schnellzugriff auf Training, Spieltag und Aufstiegstopf." },
+      { property: "og:title", content: "Dashboard — SuS Wesel Prämien" },
+      { property: "og:description", content: "Persönliches Dashboard mit aktuellem Punktestand, letzten Buchungen und Schnellzugriff auf Training, Spieltag und Aufstiegstopf." },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: DashboardPage,
 });
 
