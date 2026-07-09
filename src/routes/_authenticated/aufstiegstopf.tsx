@@ -10,7 +10,15 @@ import { Trophy, Lock } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 export const Route = createFileRoute("/_authenticated/aufstiegstopf")({
-  head: () => ({ meta: [{ title: "Aufstiegstopf — SuS Wesel Prämien" }] }),
+  head: () => ({
+    meta: [
+      { title: "Aufstiegstopf — SuS Wesel Prämien" },
+      { name: "description", content: "Live-Simulation und Auszahlung des Aufstiegstopfs am Saisonende inklusive Prämienverteilung nach Punktestand." },
+      { property: "og:title", content: "Aufstiegstopf — SuS Wesel Prämien" },
+      { property: "og:description", content: "Live-Simulation und Auszahlung des Aufstiegstopfs am Saisonende inklusive Prämienverteilung nach Punktestand." },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: AufstiegPage,
 });
 

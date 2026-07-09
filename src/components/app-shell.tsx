@@ -58,8 +58,8 @@ export function AppShell({ children, title }: { children: React.ReactNode; title
             <div className="size-10 rounded-full bg-brand-dark text-white flex items-center justify-center font-display outline outline-2 outline-offset-2 outline-brand-red/20">
               {initials || "?"}
             </div>
-            <Button variant="ghost" size="icon" onClick={handleLogout} title="Abmelden">
-              <LogOut className="size-4" />
+            <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Abmelden" title="Abmelden">
+              <LogOut className="size-4" aria-hidden="true" />
             </Button>
           </div>
         </div>

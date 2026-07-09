@@ -12,7 +12,15 @@ import { Switch } from "@/components/ui/switch";
 import { Trash2, Plus } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/einstellungen")({
-  head: () => ({ meta: [{ title: "Einstellungen — SuS Wesel Prämien" }] }),
+  head: () => ({
+    meta: [
+      { title: "Einstellungen — SuS Wesel Prämien" },
+      { name: "description", content: "Saison-Einstellungen, Punkte-Caps, Prämien-Beträge und Regelkatalog für das Prämien-System von SuS Wesel konfigurieren." },
+      { property: "og:title", content: "Einstellungen — SuS Wesel Prämien" },
+      { property: "og:description", content: "Saison-Einstellungen, Punkte-Caps, Prämien-Beträge und Regelkatalog für das Prämien-System von SuS Wesel konfigurieren." },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: SettingsPage,
 });
 

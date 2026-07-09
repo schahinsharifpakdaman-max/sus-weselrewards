@@ -15,7 +15,15 @@ import { Input } from "@/components/ui/input";
 import { txLabel } from "./dashboard";
 
 export const Route = createFileRoute("/_authenticated/konto")({
-  head: () => ({ meta: [{ title: "Punktekonto — SuS Wesel Prämien" }] }),
+  head: () => ({
+    meta: [
+      { title: "Punktekonto — SuS Wesel Prämien" },
+      { name: "description", content: "Punktekonto-Historie, Sammelbuchungen und manuelle Korrekturen für Spieler und Trainer im Prämien-System." },
+      { property: "og:title", content: "Punktekonto — SuS Wesel Prämien" },
+      { property: "og:description", content: "Punktekonto-Historie, Sammelbuchungen und manuelle Korrekturen für Spieler und Trainer im Prämien-System." },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: KontoPage,
 });
 

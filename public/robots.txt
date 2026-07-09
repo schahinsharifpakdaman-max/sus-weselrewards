@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /auth
+Disallow: /dashboard
+Disallow: /konto
+Disallow: /kader
+Disallow: /training
+Disallow: /spieltag
+Disallow: /aufstiegstopf
+Disallow: /einstellungen
+
+Sitemap: https://sus-weselrewards.lovable.app/sitemap.xml

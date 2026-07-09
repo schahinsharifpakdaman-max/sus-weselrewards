@@ -12,6 +12,9 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Anmelden — SuS Wesel Prämien-System" },
+      { name: "description", content: "Login und Registrierung für Spieler, Trainer und Abteilungsleitung im Prämien-System von SuS Wesel 1920/75 e.V." },
+      { property: "og:title", content: "Anmelden — SuS Wesel Prämien-System" },
+      { property: "og:description", content: "Login und Registrierung für Spieler, Trainer und Abteilungsleitung im Prämien-System von SuS Wesel 1920/75 e.V." },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -78,7 +81,7 @@ function AuthPage() {
 
       <div className="flex-1 flex items-center justify-center px-4 pb-12">
         <div className="w-full max-w-md bg-white text-brand-dark rounded-3xl p-6 shadow-2xl shadow-brand-red/20">
-          <h1 className="font-display text-3xl uppercase tracking-wide mb-1">Anmelden</h1>
+          <h1 className="font-display text-3xl uppercase tracking-wide mb-1">Anmelden — SuS Wesel Prämien-System</h1>
           <p className="text-sm text-black/50 mb-6">Für Spieler, Trainer und Abteilungsleitung.</p>
 
           <Tabs defaultValue="login" className="w-full">

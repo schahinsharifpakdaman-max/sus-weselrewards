@@ -28,7 +28,15 @@ import {
 import { CalendarPlus, Download, Lock, Trophy } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/spieltag")({
-  head: () => ({ meta: [{ title: "Spieltag — SuS Wesel Prämien" }] }),
+  head: () => ({
+    meta: [
+      { title: "Spieltag — SuS Wesel Prämien" },
+      { name: "description", content: "Spieltage anlegen, Kader nominieren, Karten und Verspätungen erfassen und Ligapunkt-Prämien automatisch verteilen." },
+      { property: "og:title", content: "Spieltag — SuS Wesel Prämien" },
+      { property: "og:description", content: "Spieltage anlegen, Kader nominieren, Karten und Verspätungen erfassen und Ligapunkt-Prämien automatisch verteilen." },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: SpieltagPage,
 });
 

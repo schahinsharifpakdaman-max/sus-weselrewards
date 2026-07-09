@@ -27,7 +27,15 @@ import {
 import { CalendarPlus, Lock, Users, ClockAlert } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/training")({
-  head: () => ({ meta: [{ title: "Training — SuS Wesel Prämien" }] }),
+  head: () => ({
+    meta: [
+      { title: "Training — SuS Wesel Prämien" },
+      { name: "description", content: "Trainingseinheiten planen, Anwesenheit erfassen und Fehlzeiten automatisch als Punktabzug ins Prämien-System buchen." },
+      { property: "og:title", content: "Training — SuS Wesel Prämien" },
+      { property: "og:description", content: "Trainingseinheiten planen, Anwesenheit erfassen und Fehlzeiten automatisch als Punktabzug ins Prämien-System buchen." },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: TrainingPage,
 });
 
