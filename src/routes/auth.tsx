@@ -121,7 +121,8 @@ function AuthPage() {
                   {busy ? "Moment…" : "Konto erstellen"}
                 </Button>
                 <p className="text-[11px] text-black/50 text-center">
-                  Die erste Registrierung erhält automatisch Admin-Rechte.
+                  Neue Konten werden als Spieler mit reinen Leserechten angelegt.
+                  Erweiterte Rechte (Trainer/Admin) vergibt die Vereinsleitung.
                 </p>
               </form>
             </TabsContent>
