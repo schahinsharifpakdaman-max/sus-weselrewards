@@ -247,6 +247,111 @@ export type Database = {
         }
         Relationships: []
       }
+      training_attendance: {
+        Row: {
+          created_at: string
+          id: string
+          late_minutes: number
+          note: string | null
+          profile_id: string
+          status: Database["public"]["Enums"]["attendance_status"]
+          training_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          late_minutes?: number
+          note?: string | null
+          profile_id: string
+          status?: Database["public"]["Enums"]["attendance_status"]
+          training_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          late_minutes?: number
+          note?: string | null
+          profile_id?: string
+          status?: Database["public"]["Enums"]["attendance_status"]
+          training_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_attendance_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_attendance_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "trainings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trainings: {
+        Row: {
+          closed: boolean
+          closed_at: string | null
+          closed_by: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          scheduled_at: string
+          season_id: string | null
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          closed?: boolean
+          closed_at?: string | null
+          closed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          scheduled_at: string
+          season_id?: string | null
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          closed?: boolean
+          closed_at?: string | null
+          closed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          scheduled_at?: string
+          season_id?: string | null
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trainings_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trainings_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -273,6 +378,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      close_training: { Args: { _training_id: string }; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -283,6 +389,11 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "trainer" | "spieler"
+      attendance_status:
+        | "anwesend"
+        | "entschuldigt"
+        | "unentschuldigt"
+        | "verspaetet"
       person_status: "aktiv" | "verletzt"
       transaction_kind:
         | "bonus"
@@ -423,6 +534,12 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "trainer", "spieler"],
+      attendance_status: [
+        "anwesend",
+        "entschuldigt",
+        "unentschuldigt",
+        "verspaetet",
+      ],
       person_status: ["aktiv", "verletzt"],
       transaction_kind: [
         "bonus",
