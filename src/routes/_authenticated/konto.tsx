@@ -8,7 +8,10 @@ import { useMyProfile, useMyRole, useSession } from "@/hooks/use-session";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Undo2 } from "lucide-react";
+import { Undo2, Users } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { txLabel } from "./dashboard";
 
 export const Route = createFileRoute("/_authenticated/konto")({
@@ -40,18 +43,21 @@ function KontoPage() {
     <AppShell title="Punktekonto">
       <div className="space-y-6">
         {isPrivileged && (
-          <Select value={activeId ?? undefined} onValueChange={(v) => setPersonId(v)}>
-            <SelectTrigger className="bg-white">
-              <SelectValue placeholder="Person auswählen" />
-            </SelectTrigger>
-            <SelectContent>
-              {(people ?? []).map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.full_name}{p.is_trainer ? " (Trainer)" : ""}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2">
+            <Select value={activeId ?? undefined} onValueChange={(v) => setPersonId(v)}>
+              <SelectTrigger className="bg-white flex-1">
+                <SelectValue placeholder="Person auswählen" />
+              </SelectTrigger>
+              <SelectContent>
+                {(people ?? []).map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.full_name}{p.is_trainer ? " (Trainer)" : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <BulkBookingDialog adminOnly={role === "admin"} />
+          </div>
         )}
 
         {activeId && (
@@ -63,6 +69,177 @@ function KontoPage() {
         )}
       </div>
     </AppShell>
+  );
+}
+
+function BulkBookingDialog({ adminOnly }: { adminOnly: boolean }) {
+  const qc = useQueryClient();
+  const { user } = useSession();
+  const [open, setOpen] = useState(false);
+  const [ruleId, setRuleId] = useState<string | null>(null);
+  const [customDelta, setCustomDelta] = useState<string>("");
+  const [customLabel, setCustomLabel] = useState<string>("");
+  const [comment, setComment] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [busy, setBusy] = useState(false);
+
+  const { data: rules } = useQuery({
+    queryKey: ["rules"],
+    queryFn: async () => {
+      const { data } = await supabase.from("rule_catalog").select("*").eq("active", true).order("sort_order");
+      return data ?? [];
+    },
+  });
+  const { data: people } = useQuery({
+    queryKey: ["people-bulk"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name, is_trainer, status")
+        .order("full_name");
+      return data ?? [];
+    },
+  });
+
+  const visibleRules = useMemo(
+    () => (rules ?? []).filter((r) => adminOnly || !r.admin_only),
+    [rules, adminOnly],
+  );
+
+  function toggle(id: string) {
+    setSelected((prev) => {
+      const s = new Set(prev);
+      if (s.has(id)) s.delete(id); else s.add(id);
+      return s;
+    });
+  }
+  function selectAll(filter: (p: { is_trainer: boolean }) => boolean) {
+    setSelected(new Set((people ?? []).filter(filter).map((p) => p.id)));
+  }
+
+  async function submit() {
+    if (selected.size === 0) return toast.error("Keine Person ausgewählt");
+    let delta = 0;
+    let label = "";
+    let kind: "bonus" | "strafe" | "manuell" = "manuell";
+    let ruleRef: string | null = null;
+    if (ruleId === "__custom__") {
+      delta = Number(customDelta);
+      if (!delta) return toast.error("Punkte (≠ 0) erforderlich");
+      label = customLabel || "Manuelle Buchung";
+      kind = delta > 0 ? "bonus" : "strafe";
+    } else {
+      const r = (rules ?? []).find((x) => x.id === ruleId);
+      if (!r) return toast.error("Regel auswählen");
+      delta = r.delta;
+      label = r.label;
+      kind = r.delta > 0 ? "bonus" : "strafe";
+      ruleRef = r.id;
+    }
+
+    setBusy(true);
+    const rows = Array.from(selected).map((profile_id) => ({
+      profile_id,
+      kind,
+      delta,
+      comment: comment || label,
+      rule_id: ruleRef,
+      booked_by: user?.id,
+    }));
+    const { error } = await supabase.from("point_transactions").insert(rows);
+    setBusy(false);
+    if (error) return toast.error("Sammelbuchung fehlgeschlagen", { description: error.message });
+    toast.success(`Gebucht: ${label} × ${rows.length}`);
+    setSelected(new Set());
+    setComment("");
+    setRuleId(null);
+    setCustomDelta("");
+    setCustomLabel("");
+    setOpen(false);
+    qc.invalidateQueries();
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="font-bold uppercase gap-1">
+          <Users className="size-4" /> Sammel
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="font-display uppercase">Sammelbuchung</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-xs font-bold uppercase tracking-wide">Regel</label>
+            <Select value={ruleId ?? undefined} onValueChange={setRuleId}>
+              <SelectTrigger><SelectValue placeholder="Regel auswählen…" /></SelectTrigger>
+              <SelectContent>
+                {visibleRules.map((r) => (
+                  <SelectItem key={r.id} value={r.id}>
+                    <span className={`font-display mr-2 ${r.delta > 0 ? "text-status-success" : "text-brand-red"}`}>
+                      {r.delta > 0 ? "+" : ""}{r.delta}
+                    </span>
+                    {r.label}
+                  </SelectItem>
+                ))}
+                {adminOnly && <SelectItem value="__custom__">Freie Buchung…</SelectItem>}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {ruleId === "__custom__" && (
+            <div className="grid grid-cols-[1fr_100px] gap-2">
+              <Input
+                placeholder="Bezeichnung"
+                value={customLabel}
+                onChange={(e) => setCustomLabel(e.target.value)}
+              />
+              <Input
+                type="number"
+                placeholder="±Pkt"
+                value={customDelta}
+                onChange={(e) => setCustomDelta(e.target.value)}
+              />
+            </div>
+          )}
+
+          <Textarea
+            placeholder="Kommentar (optional)"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+          />
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold uppercase tracking-wide">
+                Personen ({selected.size})
+              </label>
+              <div className="flex gap-1">
+                <Button type="button" variant="ghost" size="sm" onClick={() => selectAll(() => true)}>Alle</Button>
+                <Button type="button" variant="ghost" size="sm" onClick={() => selectAll((p) => !p.is_trainer)}>Spieler</Button>
+                <Button type="button" variant="ghost" size="sm" onClick={() => selectAll((p) => p.is_trainer)}>Trainer</Button>
+                <Button type="button" variant="ghost" size="sm" onClick={() => setSelected(new Set())}>Keine</Button>
+              </div>
+            </div>
+            <div className="border border-black/10 rounded-xl divide-y divide-black/5 max-h-64 overflow-y-auto">
+              {(people ?? []).map((p) => (
+                <label key={p.id} className="p-2 flex items-center gap-2 cursor-pointer hover:bg-black/5">
+                  <Checkbox checked={selected.has(p.id)} onCheckedChange={() => toggle(p.id)} />
+                  <span className="flex-1 text-sm">{p.full_name}</span>
+                  {p.is_trainer && <span className="text-[10px] uppercase text-brand-red font-bold">Trainer</span>}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <Button onClick={submit} disabled={busy || selected.size === 0 || !ruleId} className="w-full font-bold uppercase">
+            {busy ? "Buche…" : `Buchen für ${selected.size} Person${selected.size === 1 ? "" : "en"}`}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
