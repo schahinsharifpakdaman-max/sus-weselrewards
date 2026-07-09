@@ -564,13 +564,6 @@ export type Database = {
       close_match: { Args: { _match_id: string }; Returns: undefined }
       close_season: { Args: { _season_id: string }; Returns: undefined }
       close_training: { Args: { _training_id: string }; Returns: undefined }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
     }
     Enums: {
       app_role: "admin" | "trainer" | "spieler"
