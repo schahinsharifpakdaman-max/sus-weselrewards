@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedTrainingRouteImport } from './routes/_authenticated/training'
+import { Route as AuthenticatedSpieltagRouteImport } from './routes/_authenticated/spieltag'
 import { Route as AuthenticatedKontoRouteImport } from './routes/_authenticated/konto'
 import { Route as AuthenticatedKaderRouteImport } from './routes/_authenticated/kader'
 import { Route as AuthenticatedEinstellungenRouteImport } from './routes/_authenticated/einstellungen'
@@ -36,6 +37,11 @@ const IndexRoute = IndexRouteImport.update({
 const AuthenticatedTrainingRoute = AuthenticatedTrainingRouteImport.update({
   id: '/training',
   path: '/training',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSpieltagRoute = AuthenticatedSpieltagRouteImport.update({
+  id: '/spieltag',
+  path: '/spieltag',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedKontoRoute = AuthenticatedKontoRouteImport.update({
@@ -74,6 +80,7 @@ export interface FileRoutesByFullPath {
   '/einstellungen': typeof AuthenticatedEinstellungenRoute
   '/kader': typeof AuthenticatedKaderRoute
   '/konto': typeof AuthenticatedKontoRoute
+  '/spieltag': typeof AuthenticatedSpieltagRoute
   '/training': typeof AuthenticatedTrainingRoute
 }
 export interface FileRoutesByTo {
@@ -84,6 +91,7 @@ export interface FileRoutesByTo {
   '/einstellungen': typeof AuthenticatedEinstellungenRoute
   '/kader': typeof AuthenticatedKaderRoute
   '/konto': typeof AuthenticatedKontoRoute
+  '/spieltag': typeof AuthenticatedSpieltagRoute
   '/training': typeof AuthenticatedTrainingRoute
 }
 export interface FileRoutesById {
@@ -96,6 +104,7 @@ export interface FileRoutesById {
   '/_authenticated/einstellungen': typeof AuthenticatedEinstellungenRoute
   '/_authenticated/kader': typeof AuthenticatedKaderRoute
   '/_authenticated/konto': typeof AuthenticatedKontoRoute
+  '/_authenticated/spieltag': typeof AuthenticatedSpieltagRoute
   '/_authenticated/training': typeof AuthenticatedTrainingRoute
 }
 export interface FileRouteTypes {
@@ -108,6 +117,7 @@ export interface FileRouteTypes {
     | '/einstellungen'
     | '/kader'
     | '/konto'
+    | '/spieltag'
     | '/training'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -118,6 +128,7 @@ export interface FileRouteTypes {
     | '/einstellungen'
     | '/kader'
     | '/konto'
+    | '/spieltag'
     | '/training'
   id:
     | '__root__'
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | '/_authenticated/einstellungen'
     | '/_authenticated/kader'
     | '/_authenticated/konto'
+    | '/_authenticated/spieltag'
     | '/_authenticated/training'
   fileRoutesById: FileRoutesById
 }
@@ -166,6 +178,13 @@ declare module '@tanstack/react-router' {
       path: '/training'
       fullPath: '/training'
       preLoaderRoute: typeof AuthenticatedTrainingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/spieltag': {
+      id: '/_authenticated/spieltag'
+      path: '/spieltag'
+      fullPath: '/spieltag'
+      preLoaderRoute: typeof AuthenticatedSpieltagRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/konto': {
@@ -212,6 +231,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEinstellungenRoute: typeof AuthenticatedEinstellungenRoute
   AuthenticatedKaderRoute: typeof AuthenticatedKaderRoute
   AuthenticatedKontoRoute: typeof AuthenticatedKontoRoute
+  AuthenticatedSpieltagRoute: typeof AuthenticatedSpieltagRoute
   AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
 }
 
@@ -221,6 +241,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEinstellungenRoute: AuthenticatedEinstellungenRoute,
   AuthenticatedKaderRoute: AuthenticatedKaderRoute,
   AuthenticatedKontoRoute: AuthenticatedKontoRoute,
+  AuthenticatedSpieltagRoute: AuthenticatedSpieltagRoute,
   AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
 }
 
