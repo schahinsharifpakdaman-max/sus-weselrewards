@@ -216,6 +216,60 @@ export type Database = {
           },
         ]
       }
+      premium_settlements: {
+        Row: {
+          balance_at_close: number
+          base_share_euro: number
+          created_at: string
+          id: string
+          matchday_premium_euro: number
+          payout_euro: number
+          profile_id: string
+          season_id: string
+          share_ratio: number
+          total_euro: number
+        }
+        Insert: {
+          balance_at_close: number
+          base_share_euro: number
+          created_at?: string
+          id?: string
+          matchday_premium_euro?: number
+          payout_euro: number
+          profile_id: string
+          season_id: string
+          share_ratio: number
+          total_euro: number
+        }
+        Update: {
+          balance_at_close?: number
+          base_share_euro?: number
+          created_at?: string
+          id?: string
+          matchday_premium_euro?: number
+          payout_euro?: number
+          profile_id?: string
+          season_id?: string
+          share_ratio?: number
+          total_euro?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "premium_settlements_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "premium_settlements_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           aufstieg_beteiligt: boolean
@@ -508,6 +562,7 @@ export type Database = {
     }
     Functions: {
       close_match: { Args: { _match_id: string }; Returns: undefined }
+      close_season: { Args: { _season_id: string }; Returns: undefined }
       close_training: { Args: { _training_id: string }; Returns: undefined }
       has_role: {
         Args: {
