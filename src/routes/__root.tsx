@@ -93,13 +93,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "Punkteprämien-App der Seniorenmannschaften von SuS Wesel 1920/75 e.V." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "SuS Wesel Prämien-System" },
+      { name: "twitter:description", content: "Punkteprämien-App der Seniorenmannschaften von SuS Wesel 1920/75 e.V." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0dcc35bf-4df7-4f35-ac2d-3cfc5caf4b62/id-preview-e850f1ff--c6309c36-1a15-4720-8c00-eba1e4b22348.lovable.app-1783621019547.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0dcc35bf-4df7-4f35-ac2d-3cfc5caf4b62/id-preview-e850f1ff--c6309c36-1a15-4720-8c00-eba1e4b22348.lovable.app-1783621019547.png" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
   }),
   shellComponent: RootShell,
