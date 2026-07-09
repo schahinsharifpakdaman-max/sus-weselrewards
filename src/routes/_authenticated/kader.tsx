@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/kader")({
   head: () => ({ meta: [{ title: "Kader — SuS Wesel Prämien" }] }),
@@ -113,6 +113,18 @@ function PersonRow({ p, isAdmin, teams }: { p: Person; isAdmin: boolean; teams: 
     qc.invalidateQueries();
   }
 
+  async function remove() {
+    if (!confirm(
+      `„${p.full_name}" wirklich aus dem Kader entfernen?\n` +
+      `Punktekonto und alle Buchungen dieser Person werden ebenfalls gelöscht. ` +
+      `Etwaige App-Anmeldung bleibt bestehen.`
+    )) return;
+    const { error } = await supabase.from("profiles").delete().eq("id", p.id);
+    if (error) return toast.error("Löschen fehlgeschlagen", { description: error.message });
+    toast.success("Person entfernt");
+    qc.invalidateQueries();
+  }
+
   return (
     <div className="p-4 flex justify-between items-center gap-3 flex-wrap">
       <div className="min-w-0">
@@ -145,6 +157,15 @@ function PersonRow({ p, isAdmin, teams }: { p: Person; isAdmin: boolean; teams: 
                 ))}
               </SelectContent>
             </Select>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={remove}
+              title="Person entfernen"
+              className="text-brand-red hover:bg-brand-red/10"
+            >
+              <Trash2 className="size-4" />
+            </Button>
           </>
         )}
       </div>
