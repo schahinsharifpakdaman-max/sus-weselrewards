@@ -14,6 +14,135 @@ export type Database = {
   }
   public: {
     Tables: {
+      match_participations: {
+        Row: {
+          created_at: string
+          gelb: boolean
+          gelbrot: boolean
+          id: string
+          late_minutes: number
+          match_id: string
+          nominated: boolean
+          premium_euro: number
+          profile_id: string
+          rot: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          gelb?: boolean
+          gelbrot?: boolean
+          id?: string
+          late_minutes?: number
+          match_id: string
+          nominated?: boolean
+          premium_euro?: number
+          profile_id: string
+          rot?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          gelb?: boolean
+          gelbrot?: boolean
+          id?: string
+          late_minutes?: number
+          match_id?: string
+          nominated?: boolean
+          premium_euro?: number
+          profile_id?: string
+          rot?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_participations_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_participations_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matches: {
+        Row: {
+          closed: boolean
+          closed_at: string | null
+          closed_by: string | null
+          created_at: string
+          created_by: string | null
+          goals_against: number | null
+          goals_for: number | null
+          id: string
+          is_home: boolean
+          ligapunkte: number
+          notes: string | null
+          opponent: string
+          scheduled_at: string
+          season_id: string | null
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          closed?: boolean
+          closed_at?: string | null
+          closed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          goals_against?: number | null
+          goals_for?: number | null
+          id?: string
+          is_home?: boolean
+          ligapunkte?: number
+          notes?: string | null
+          opponent: string
+          scheduled_at: string
+          season_id?: string | null
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          closed?: boolean
+          closed_at?: string | null
+          closed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          goals_against?: number | null
+          goals_for?: number | null
+          id?: string
+          is_home?: boolean
+          ligapunkte?: number
+          notes?: string | null
+          opponent?: string
+          scheduled_at?: string
+          season_id?: string | null
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matches_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       point_accounts: {
         Row: {
           balance: number
@@ -378,6 +507,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      close_match: { Args: { _match_id: string }; Returns: undefined }
       close_training: { Args: { _training_id: string }; Returns: undefined }
       has_role: {
         Args: {
