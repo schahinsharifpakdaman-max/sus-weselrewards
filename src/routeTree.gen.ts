@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedTrainingRouteImport } from './routes/_authenticated/training'
 import { Route as AuthenticatedSpieltagRouteImport } from './routes/_authenticated/spieltag'
 import { Route as AuthenticatedKontoRouteImport } from './routes/_authenticated/konto'
 import { Route as AuthenticatedKaderRouteImport } from './routes/_authenticated/kader'
@@ -32,6 +33,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedTrainingRoute = AuthenticatedTrainingRouteImport.update({
+  id: '/training',
+  path: '/training',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSpieltagRoute = AuthenticatedSpieltagRouteImport.update({
   id: '/spieltag',
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/kader': typeof AuthenticatedKaderRoute
   '/konto': typeof AuthenticatedKontoRoute
   '/spieltag': typeof AuthenticatedSpieltagRoute
+  '/training': typeof AuthenticatedTrainingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -85,6 +92,7 @@ export interface FileRoutesByTo {
   '/kader': typeof AuthenticatedKaderRoute
   '/konto': typeof AuthenticatedKontoRoute
   '/spieltag': typeof AuthenticatedSpieltagRoute
+  '/training': typeof AuthenticatedTrainingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -97,6 +105,7 @@ export interface FileRoutesById {
   '/_authenticated/kader': typeof AuthenticatedKaderRoute
   '/_authenticated/konto': typeof AuthenticatedKontoRoute
   '/_authenticated/spieltag': typeof AuthenticatedSpieltagRoute
+  '/_authenticated/training': typeof AuthenticatedTrainingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -109,6 +118,7 @@ export interface FileRouteTypes {
     | '/kader'
     | '/konto'
     | '/spieltag'
+    | '/training'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -119,6 +129,7 @@ export interface FileRouteTypes {
     | '/kader'
     | '/konto'
     | '/spieltag'
+    | '/training'
   id:
     | '__root__'
     | '/'
@@ -130,6 +141,7 @@ export interface FileRouteTypes {
     | '/_authenticated/kader'
     | '/_authenticated/konto'
     | '/_authenticated/spieltag'
+    | '/_authenticated/training'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -160,6 +172,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/training': {
+      id: '/_authenticated/training'
+      path: '/training'
+      fullPath: '/training'
+      preLoaderRoute: typeof AuthenticatedTrainingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/spieltag': {
       id: '/_authenticated/spieltag'
@@ -213,6 +232,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedKaderRoute: typeof AuthenticatedKaderRoute
   AuthenticatedKontoRoute: typeof AuthenticatedKontoRoute
   AuthenticatedSpieltagRoute: typeof AuthenticatedSpieltagRoute
+  AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -222,6 +242,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedKaderRoute: AuthenticatedKaderRoute,
   AuthenticatedKontoRoute: AuthenticatedKontoRoute,
   AuthenticatedSpieltagRoute: AuthenticatedSpieltagRoute,
+  AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
