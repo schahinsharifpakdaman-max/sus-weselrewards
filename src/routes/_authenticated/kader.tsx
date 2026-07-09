@@ -107,7 +107,7 @@ function PersonRow({ p, isAdmin, teams }: { p: Person; isAdmin: boolean; teams: 
     ? p.point_accounts[0]?.balance ?? 150
     : p.point_accounts?.balance ?? 150;
 
-  async function update(patch: Partial<Person>) {
+  async function update(patch: { status?: Person["status"]; team_id?: string | null; aufstieg_beteiligt?: boolean }) {
     const { error } = await supabase.from("profiles").update(patch).eq("id", p.id);
     if (error) return toast.error("Update fehlgeschlagen", { description: error.message });
     qc.invalidateQueries();

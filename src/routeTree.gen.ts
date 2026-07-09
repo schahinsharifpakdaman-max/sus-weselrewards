@@ -10,11 +10,23 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedTrainingRouteImport } from './routes/_authenticated/training'
+import { Route as AuthenticatedSpieltagRouteImport } from './routes/_authenticated/spieltag'
+import { Route as AuthenticatedKontoRouteImport } from './routes/_authenticated/konto'
+import { Route as AuthenticatedKaderRouteImport } from './routes/_authenticated/kader'
+import { Route as AuthenticatedEinstellungenRouteImport } from './routes/_authenticated/einstellungen'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedAufstiegstopfRouteImport } from './routes/_authenticated/aufstiegstopf'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -22,30 +34,119 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedTrainingRoute = AuthenticatedTrainingRouteImport.update({
+  id: '/training',
+  path: '/training',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSpieltagRoute = AuthenticatedSpieltagRouteImport.update({
+  id: '/spieltag',
+  path: '/spieltag',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedKontoRoute = AuthenticatedKontoRouteImport.update({
+  id: '/konto',
+  path: '/konto',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedKaderRoute = AuthenticatedKaderRouteImport.update({
+  id: '/kader',
+  path: '/kader',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedEinstellungenRoute =
+  AuthenticatedEinstellungenRouteImport.update({
+    id: '/einstellungen',
+    path: '/einstellungen',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAufstiegstopfRoute =
+  AuthenticatedAufstiegstopfRouteImport.update({
+    id: '/aufstiegstopf',
+    path: '/aufstiegstopf',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/aufstiegstopf': typeof AuthenticatedAufstiegstopfRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/einstellungen': typeof AuthenticatedEinstellungenRoute
+  '/kader': typeof AuthenticatedKaderRoute
+  '/konto': typeof AuthenticatedKontoRoute
+  '/spieltag': typeof AuthenticatedSpieltagRoute
+  '/training': typeof AuthenticatedTrainingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/aufstiegstopf': typeof AuthenticatedAufstiegstopfRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/einstellungen': typeof AuthenticatedEinstellungenRoute
+  '/kader': typeof AuthenticatedKaderRoute
+  '/konto': typeof AuthenticatedKontoRoute
+  '/spieltag': typeof AuthenticatedSpieltagRoute
+  '/training': typeof AuthenticatedTrainingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/aufstiegstopf': typeof AuthenticatedAufstiegstopfRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/einstellungen': typeof AuthenticatedEinstellungenRoute
+  '/_authenticated/kader': typeof AuthenticatedKaderRoute
+  '/_authenticated/konto': typeof AuthenticatedKontoRoute
+  '/_authenticated/spieltag': typeof AuthenticatedSpieltagRoute
+  '/_authenticated/training': typeof AuthenticatedTrainingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/aufstiegstopf'
+    | '/dashboard'
+    | '/einstellungen'
+    | '/kader'
+    | '/konto'
+    | '/spieltag'
+    | '/training'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth'
-  id: '__root__' | '/' | '/auth'
+  to:
+    | '/'
+    | '/auth'
+    | '/aufstiegstopf'
+    | '/dashboard'
+    | '/einstellungen'
+    | '/kader'
+    | '/konto'
+    | '/spieltag'
+    | '/training'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/aufstiegstopf'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/einstellungen'
+    | '/_authenticated/kader'
+    | '/_authenticated/konto'
+    | '/_authenticated/spieltag'
+    | '/_authenticated/training'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
 }
 
@@ -58,6 +159,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -65,11 +173,84 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/training': {
+      id: '/_authenticated/training'
+      path: '/training'
+      fullPath: '/training'
+      preLoaderRoute: typeof AuthenticatedTrainingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/spieltag': {
+      id: '/_authenticated/spieltag'
+      path: '/spieltag'
+      fullPath: '/spieltag'
+      preLoaderRoute: typeof AuthenticatedSpieltagRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/konto': {
+      id: '/_authenticated/konto'
+      path: '/konto'
+      fullPath: '/konto'
+      preLoaderRoute: typeof AuthenticatedKontoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/kader': {
+      id: '/_authenticated/kader'
+      path: '/kader'
+      fullPath: '/kader'
+      preLoaderRoute: typeof AuthenticatedKaderRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/einstellungen': {
+      id: '/_authenticated/einstellungen'
+      path: '/einstellungen'
+      fullPath: '/einstellungen'
+      preLoaderRoute: typeof AuthenticatedEinstellungenRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/aufstiegstopf': {
+      id: '/_authenticated/aufstiegstopf'
+      path: '/aufstiegstopf'
+      fullPath: '/aufstiegstopf'
+      preLoaderRoute: typeof AuthenticatedAufstiegstopfRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAufstiegstopfRoute: typeof AuthenticatedAufstiegstopfRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedEinstellungenRoute: typeof AuthenticatedEinstellungenRoute
+  AuthenticatedKaderRoute: typeof AuthenticatedKaderRoute
+  AuthenticatedKontoRoute: typeof AuthenticatedKontoRoute
+  AuthenticatedSpieltagRoute: typeof AuthenticatedSpieltagRoute
+  AuthenticatedTrainingRoute: typeof AuthenticatedTrainingRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAufstiegstopfRoute: AuthenticatedAufstiegstopfRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedEinstellungenRoute: AuthenticatedEinstellungenRoute,
+  AuthenticatedKaderRoute: AuthenticatedKaderRoute,
+  AuthenticatedKontoRoute: AuthenticatedKontoRoute,
+  AuthenticatedSpieltagRoute: AuthenticatedSpieltagRoute,
+  AuthenticatedTrainingRoute: AuthenticatedTrainingRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
