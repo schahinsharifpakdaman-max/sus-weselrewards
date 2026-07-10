@@ -274,9 +274,12 @@ export type Database = {
         Row: {
           aufstieg_beteiligt: boolean
           created_at: string
+          email: string | null
           full_name: string
           id: string
+          is_approved: boolean
           is_trainer: boolean
+          requested_role: Database["public"]["Enums"]["app_role"] | null
           status: Database["public"]["Enums"]["person_status"]
           team_id: string | null
           updated_at: string
@@ -285,9 +288,12 @@ export type Database = {
         Insert: {
           aufstieg_beteiligt?: boolean
           created_at?: string
+          email?: string | null
           full_name: string
           id?: string
+          is_approved?: boolean
           is_trainer?: boolean
+          requested_role?: Database["public"]["Enums"]["app_role"] | null
           status?: Database["public"]["Enums"]["person_status"]
           team_id?: string | null
           updated_at?: string
@@ -296,9 +302,12 @@ export type Database = {
         Update: {
           aufstieg_beteiligt?: boolean
           created_at?: string
+          email?: string | null
           full_name?: string
           id?: string
+          is_approved?: boolean
           is_trainer?: boolean
+          requested_role?: Database["public"]["Enums"]["app_role"] | null
           status?: Database["public"]["Enums"]["person_status"]
           team_id?: string | null
           updated_at?: string
@@ -561,6 +570,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_profile: {
+        Args: {
+          _profile_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+          _team_id: string
+        }
+        Returns: undefined
+      }
       close_match: { Args: { _match_id: string }; Returns: undefined }
       close_season: { Args: { _season_id: string }; Returns: undefined }
       close_training: { Args: { _training_id: string }; Returns: undefined }
