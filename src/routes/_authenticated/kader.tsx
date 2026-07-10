@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, CheckCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/kader")({
   head: () => ({
@@ -33,6 +33,10 @@ type Person = {
   status: "aktiv" | "verletzt";
   is_trainer: boolean;
   aufstieg_beteiligt: boolean;
+  is_approved: boolean;
+  requested_role: "admin" | "trainer" | "spieler" | null;
+  email: string | null;
+  user_id: string | null;
   point_accounts: { balance: number }[] | { balance: number } | null;
 };
 
@@ -50,14 +54,17 @@ function KaderPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("id, full_name, team_id, status, is_trainer, aufstieg_beteiligt, point_accounts(balance)")
+        .select("id, full_name, team_id, status, is_trainer, aufstieg_beteiligt, is_approved, requested_role, email, user_id, point_accounts(balance)")
         .order("full_name");
       return (data ?? []) as Person[];
     },
   });
 
+  const pending = (people ?? []).filter((p) => !p.is_approved && p.user_id);
+  const approved = (people ?? []).filter((p) => p.is_approved);
+
   const grouped = new Map<string | null, Person[]>();
-  (people ?? []).forEach((p) => {
+  approved.forEach((p) => {
     const list = grouped.get(p.team_id) ?? [];
     list.push(p);
     grouped.set(p.team_id, list);
@@ -71,6 +78,22 @@ function KaderPage() {
             <AddPersonDialog teams={teams ?? []} />
             <AddTeamDialog />
           </div>
+        )}
+
+        {isAdmin && pending.length > 0 && (
+          <section className="bg-white rounded-2xl border-2 border-brand-red overflow-hidden">
+            <header className="px-4 py-3 bg-brand-red text-white flex justify-between items-center">
+              <h3 className="font-display uppercase text-lg">Ausstehende Freischaltungen</h3>
+              <span className="text-[10px] uppercase tracking-widest bg-white text-brand-red px-2 py-0.5 rounded-full font-bold">
+                {pending.length} neu
+              </span>
+            </header>
+            <div className="divide-y divide-black/5">
+              {pending.map((p) => (
+                <PendingRow key={p.id} p={p} teams={teams ?? []} />
+              ))}
+            </div>
+          </section>
         )}
 
         {(teams ?? []).map((t) => (
