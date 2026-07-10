@@ -289,3 +289,77 @@ function AddTeamDialog() {
     </Dialog>
   );
 }
+
+function PendingRow({ p, teams }: { p: Person; teams: { id: string; name: string }[] }) {
+  const qc = useQueryClient();
+  const [teamId, setTeamId] = useState<string>(teams[0]?.id ?? "");
+  const [role, setRole] = useState<"spieler" | "trainer">(
+    (p.requested_role as "spieler" | "trainer") ?? "spieler",
+  );
+  const [busy, setBusy] = useState(false);
+
+  async function approve() {
+    if (!teamId) return toast.error("Bitte eine Mannschaft wählen");
+    setBusy(true);
+    const { error } = await supabase.rpc("approve_profile", {
+      _profile_id: p.id,
+      _team_id: teamId,
+      _role: role,
+    });
+    setBusy(false);
+    if (error) return toast.error("Freischaltung fehlgeschlagen", { description: error.message });
+    toast.success(`${p.full_name} freigeschaltet`);
+    qc.invalidateQueries();
+  }
+
+  async function reject() {
+    if (!confirm(`Registrierung von „${p.full_name}" ablehnen und löschen?`)) return;
+    const { error } = await supabase.from("profiles").delete().eq("id", p.id);
+    if (error) return toast.error("Löschen fehlgeschlagen", { description: error.message });
+    toast.success("Registrierung abgelehnt");
+    qc.invalidateQueries();
+  }
+
+  return (
+    <div className="p-4 space-y-3">
+      <div>
+        <p className="font-bold text-sm">{p.full_name}</p>
+        <p className="text-[11px] text-black/50">{p.email ?? "—"}</p>
+        <p className="text-[10px] text-black/40 uppercase tracking-widest">
+          Anfrage: {p.requested_role ?? "spieler"}
+        </p>
+      </div>
+      <div className="flex flex-wrap gap-2 items-center">
+        <Select value={teamId} onValueChange={setTeamId}>
+          <SelectTrigger className="w-[150px] h-9 text-xs">
+            <SelectValue placeholder="Mannschaft" />
+          </SelectTrigger>
+          <SelectContent>
+            {teams.map((t) => (
+              <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={role} onValueChange={(v) => setRole(v as "spieler" | "trainer")}>
+          <SelectTrigger className="w-[120px] h-9 text-xs"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="spieler">Spieler</SelectItem>
+            <SelectItem value="trainer">Trainer</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button onClick={approve} disabled={busy} className="h-9 font-bold uppercase">
+          <CheckCircle2 className="size-4" /> Freischalten
+        </Button>
+        <Button
+          onClick={reject}
+          variant="ghost"
+          size="icon"
+          className="text-brand-red hover:bg-brand-red/10"
+          title="Ablehnen"
+        >
+          <Trash2 className="size-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
