@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Dumbbell, Calendar, Trophy, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell, balanceColor } from "@/components/app-shell";
-import { useMyProfile } from "@/hooks/use-session";
+import { useMyProfile, useMyRole } from "@/hooks/use-session";
 import { Progress } from "@/components/ui/progress";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -37,6 +37,20 @@ export function txLabel(kind: string) {
 
 function DashboardPage() {
   const { data: profile } = useMyProfile();
+  const { data: role } = useMyRole();
+
+  const { data: pendingCount } = useQuery({
+    queryKey: ["pending-approvals"],
+    enabled: role === "admin",
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .eq("is_approved", false)
+        .not("user_id", "is", null);
+      return count ?? 0;
+    },
+  });
 
   const { data: account } = useQuery({
     queryKey: ["account", profile?.id],
@@ -98,6 +112,21 @@ function DashboardPage() {
   return (
     <AppShell title="Dashboard">
       <div className="space-y-6">
+        {role === "admin" && pendingCount && pendingCount > 0 ? (
+          <Link
+            to="/kader"
+            className="block bg-brand-red text-white rounded-2xl p-4 shadow-lg"
+          >
+            <p className="text-[10px] uppercase tracking-widest text-white/70">
+              Neue Registrierungen
+            </p>
+            <p className="font-display text-lg">
+              {pendingCount} {pendingCount === 1 ? "Person wartet" : "Personen warten"} auf
+              Freischaltung →
+            </p>
+          </Link>
+        ) : null}
+
         <section className="bg-brand-dark rounded-3xl p-6 text-white shadow-xl shadow-brand-red/10 relative overflow-hidden">
           <div className="relative z-10 flex justify-between items-end gap-4">
             <div className="space-y-1">
