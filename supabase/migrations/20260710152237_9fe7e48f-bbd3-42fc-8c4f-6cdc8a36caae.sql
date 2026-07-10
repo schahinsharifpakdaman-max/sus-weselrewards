@@ -1,0 +1,1 @@
+GRANT INSERT, UPDATE, DELETE ON public.point_accounts TO authenticated;

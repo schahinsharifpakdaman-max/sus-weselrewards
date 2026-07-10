@@ -11,7 +11,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Trash2, CheckCircle2 } from "lucide-react";
+import { Mail, Plus, Trash2, CheckCircle2 } from "lucide-react";
+
+const SYSTEM_NOTIFICATION_EMAIL = "abteilungsleiterfussball@sus-wesel.de";
 
 export const Route = createFileRoute("/_authenticated/kader")({
   head: () => ({
@@ -74,9 +76,15 @@ function KaderPage() {
     <AppShell title="Kader">
       <div className="space-y-4">
         {isAdmin && (
-          <div className="flex gap-2">
-            <AddPersonDialog teams={teams ?? []} />
-            <AddTeamDialog />
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <AddPersonDialog teams={teams ?? []} />
+              <AddTeamDialog />
+            </div>
+            <p className="flex items-center gap-1.5 text-[11px] text-black/45">
+              <Mail className="size-3.5" aria-hidden="true" />
+              Systembenachrichtigungen: {SYSTEM_NOTIFICATION_EMAIL}
+            </p>
           </div>
         )}
 
@@ -167,6 +175,9 @@ function PersonRow({ p, isAdmin, teams }: { p: Person; isAdmin: boolean; teams: 
           Status: {p.status}
           {p.aufstieg_beteiligt ? " · Aufstiegstopf" : ""}
         </p>
+        {p.email && (
+          <p className="text-[11px] text-black/45 break-all">{p.email}</p>
+        )}
       </div>
       <div className="flex items-center gap-3">
         <span className={`font-display text-lg ${balanceColor(balance)}`}>{balance}</span>
@@ -208,6 +219,7 @@ function AddPersonDialog({ teams }: { teams: { id: string; name: string }[] }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [teamId, setTeamId] = useState<string>(teams[0]?.id ?? "");
   const [isTrainer, setIsTrainer] = useState(false);
 
@@ -215,11 +227,19 @@ function AddPersonDialog({ teams }: { teams: { id: string; name: string }[] }) {
     if (!name.trim()) return;
     const { error } = await supabase
       .from("profiles")
-      .insert({ full_name: name.trim(), team_id: teamId || null, is_trainer: isTrainer });
+      .insert({
+        full_name: name.trim(),
+        email: email.trim() || null,
+        team_id: teamId || null,
+        is_trainer: isTrainer,
+        is_approved: true,
+        requested_role: isTrainer ? "trainer" : "spieler",
+      });
     if (error) return toast.error("Anlegen fehlgeschlagen", { description: error.message });
     toast.success("Person angelegt (Konto = 150)");
     setOpen(false);
     setName("");
+    setEmail("");
     qc.invalidateQueries();
   }
 
@@ -234,6 +254,15 @@ function AddPersonDialog({ teams }: { teams: { id: string; name: string }[] }) {
           <div>
             <Label>Name</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Vor- und Nachname" />
+          </div>
+          <div>
+            <Label>E-Mail</Label>
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="name@sus-wesel.de"
+            />
           </div>
           <div>
             <Label>Mannschaft</Label>
