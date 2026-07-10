@@ -35,6 +35,37 @@ export function AppShell({ children, title }: { children: React.ReactNode; title
     .join("")
     .toUpperCase();
 
+  const pending = profile && profile.is_approved === false;
+
+  if (pending) {
+    return (
+      <div className="min-h-screen bg-brand-gray flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-white rounded-3xl p-8 shadow-xl text-center space-y-4">
+          <div className="mx-auto size-14 rounded-full bg-brand-red text-white flex items-center justify-center font-display text-2xl">
+            W
+          </div>
+          <h1 className="font-display text-2xl uppercase tracking-wide">Warten auf Freischaltung</h1>
+          <p className="text-sm text-black/60">
+            Hallo {profile?.full_name}! Deine Registrierung ist eingegangen.
+            Die Abteilungsleitung wurde benachrichtigt und schaltet dich in Kürze frei
+            und ordnet dich einer Mannschaft zu.
+          </p>
+          <p className="text-xs text-black/40">
+            Angefragte Rolle:&nbsp;
+            <span className="font-bold uppercase">{profile?.requested_role ?? "spieler"}</span>
+          </p>
+          <Button
+            variant="outline"
+            onClick={handleLogout}
+            className="w-full font-bold uppercase"
+          >
+            <LogOut className="size-4" aria-hidden="true" /> Abmelden
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-brand-gray font-sans text-brand-dark pb-28">
       <header className="bg-white border-b border-black/5 p-4 sticky top-0 z-10">
