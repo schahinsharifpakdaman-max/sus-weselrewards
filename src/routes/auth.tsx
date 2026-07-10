@@ -27,6 +27,8 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [requestedRole, setRequestedRole] = useState<"spieler" | "trainer">("spieler");
+  const [signupDone, setSignupDone] = useState(false);
   const [busy, setBusy] = useState(false);
 
   if (!loading && session) {
@@ -54,7 +56,7 @@ function AuthPage() {
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/dashboard`,
-        data: { full_name: fullName },
+        data: { full_name: fullName, requested_role: requestedRole },
       },
     });
     setBusy(false);
@@ -62,8 +64,10 @@ function AuthPage() {
       toast.error("Registrierung fehlgeschlagen", { description: error.message });
       return;
     }
-    toast.success("Konto erstellt", { description: "Du bist eingeloggt." });
-    navigate({ to: "/dashboard", replace: true });
+    setSignupDone(true);
+    toast.success("Registrierung eingereicht", {
+      description: "Die Abteilungsleitung wird dich in Kürze freischalten.",
+    });
   }
 
   return (
@@ -107,6 +111,19 @@ function AuthPage() {
             </TabsContent>
 
             <TabsContent value="signup">
+              {signupDone ? (
+                <div className="space-y-3 text-sm">
+                  <p className="font-bold">Danke für deine Registrierung!</p>
+                  <p className="text-black/60">
+                    Die Abteilungsleitung wurde informiert und schaltet dich in Kürze frei
+                    und ordnet dich einer Mannschaft zu. Anschließend kannst du dich anmelden.
+                  </p>
+                  <p className="text-black/40 text-xs">
+                    Bitte bestätige ggf. deine E-Mail-Adresse über den Link, den wir dir
+                    zugeschickt haben.
+                  </p>
+                </div>
+              ) : (
               <form onSubmit={handleSignup} className="space-y-4">
                 <div>
                   <Label htmlFor="s-name">Vor- und Nachname</Label>
@@ -120,14 +137,42 @@ function AuthPage() {
                   <Label htmlFor="s-pw">Passwort (min. 6 Zeichen)</Label>
                   <Input id="s-pw" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
                 </div>
+                <div>
+                  <Label>Ich bin…</Label>
+                  <div className="flex gap-2 mt-1">
+                    <button
+                      type="button"
+                      onClick={() => setRequestedRole("spieler")}
+                      className={`flex-1 h-10 rounded-md border text-sm font-bold uppercase tracking-wide ${
+                        requestedRole === "spieler"
+                          ? "bg-brand-red text-white border-brand-red"
+                          : "bg-white text-brand-dark border-black/20"
+                      }`}
+                    >
+                      Spieler
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRequestedRole("trainer")}
+                      className={`flex-1 h-10 rounded-md border text-sm font-bold uppercase tracking-wide ${
+                        requestedRole === "trainer"
+                          ? "bg-brand-red text-white border-brand-red"
+                          : "bg-white text-brand-dark border-black/20"
+                      }`}
+                    >
+                      Trainer
+                    </button>
+                  </div>
+                </div>
                 <Button type="submit" className="w-full h-12 font-bold uppercase tracking-wide" disabled={busy}>
                   {busy ? "Moment…" : "Konto erstellen"}
                 </Button>
                 <p className="text-[11px] text-black/50 text-center">
-                  Neue Konten werden als Spieler mit reinen Leserechten angelegt.
-                  Erweiterte Rechte (Trainer/Admin) vergibt die Vereinsleitung.
+                  Neue Konten werden erst nach Freischaltung durch die Abteilungsleitung aktiviert.
+                  Anschließend wirst du einer Mannschaft zugeordnet.
                 </p>
               </form>
+              )}
             </TabsContent>
           </Tabs>
         </div>

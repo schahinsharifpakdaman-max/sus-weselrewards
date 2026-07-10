@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, CheckCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/kader")({
   head: () => ({
@@ -33,6 +33,10 @@ type Person = {
   status: "aktiv" | "verletzt";
   is_trainer: boolean;
   aufstieg_beteiligt: boolean;
+  is_approved: boolean;
+  requested_role: "admin" | "trainer" | "spieler" | null;
+  email: string | null;
+  user_id: string | null;
   point_accounts: { balance: number }[] | { balance: number } | null;
 };
 
@@ -50,14 +54,17 @@ function KaderPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("id, full_name, team_id, status, is_trainer, aufstieg_beteiligt, point_accounts(balance)")
+        .select("id, full_name, team_id, status, is_trainer, aufstieg_beteiligt, is_approved, requested_role, email, user_id, point_accounts(balance)")
         .order("full_name");
       return (data ?? []) as Person[];
     },
   });
 
+  const pending = (people ?? []).filter((p) => !p.is_approved && p.user_id);
+  const approved = (people ?? []).filter((p) => p.is_approved);
+
   const grouped = new Map<string | null, Person[]>();
-  (people ?? []).forEach((p) => {
+  approved.forEach((p) => {
     const list = grouped.get(p.team_id) ?? [];
     list.push(p);
     grouped.set(p.team_id, list);
@@ -71,6 +78,22 @@ function KaderPage() {
             <AddPersonDialog teams={teams ?? []} />
             <AddTeamDialog />
           </div>
+        )}
+
+        {isAdmin && pending.length > 0 && (
+          <section className="bg-white rounded-2xl border-2 border-brand-red overflow-hidden">
+            <header className="px-4 py-3 bg-brand-red text-white flex justify-between items-center">
+              <h3 className="font-display uppercase text-lg">Ausstehende Freischaltungen</h3>
+              <span className="text-[10px] uppercase tracking-widest bg-white text-brand-red px-2 py-0.5 rounded-full font-bold">
+                {pending.length} neu
+              </span>
+            </header>
+            <div className="divide-y divide-black/5">
+              {pending.map((p) => (
+                <PendingRow key={p.id} p={p} teams={teams ?? []} />
+              ))}
+            </div>
+          </section>
         )}
 
         {(teams ?? []).map((t) => (
@@ -264,5 +287,79 @@ function AddTeamDialog() {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function PendingRow({ p, teams }: { p: Person; teams: { id: string; name: string }[] }) {
+  const qc = useQueryClient();
+  const [teamId, setTeamId] = useState<string>(teams[0]?.id ?? "");
+  const [role, setRole] = useState<"spieler" | "trainer">(
+    (p.requested_role as "spieler" | "trainer") ?? "spieler",
+  );
+  const [busy, setBusy] = useState(false);
+
+  async function approve() {
+    if (!teamId) return toast.error("Bitte eine Mannschaft wählen");
+    setBusy(true);
+    const { error } = await supabase.rpc("approve_profile", {
+      _profile_id: p.id,
+      _team_id: teamId,
+      _role: role,
+    });
+    setBusy(false);
+    if (error) return toast.error("Freischaltung fehlgeschlagen", { description: error.message });
+    toast.success(`${p.full_name} freigeschaltet`);
+    qc.invalidateQueries();
+  }
+
+  async function reject() {
+    if (!confirm(`Registrierung von „${p.full_name}" ablehnen und löschen?`)) return;
+    const { error } = await supabase.from("profiles").delete().eq("id", p.id);
+    if (error) return toast.error("Löschen fehlgeschlagen", { description: error.message });
+    toast.success("Registrierung abgelehnt");
+    qc.invalidateQueries();
+  }
+
+  return (
+    <div className="p-4 space-y-3">
+      <div>
+        <p className="font-bold text-sm">{p.full_name}</p>
+        <p className="text-[11px] text-black/50">{p.email ?? "—"}</p>
+        <p className="text-[10px] text-black/40 uppercase tracking-widest">
+          Anfrage: {p.requested_role ?? "spieler"}
+        </p>
+      </div>
+      <div className="flex flex-wrap gap-2 items-center">
+        <Select value={teamId} onValueChange={setTeamId}>
+          <SelectTrigger className="w-[150px] h-9 text-xs">
+            <SelectValue placeholder="Mannschaft" />
+          </SelectTrigger>
+          <SelectContent>
+            {teams.map((t) => (
+              <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={role} onValueChange={(v) => setRole(v as "spieler" | "trainer")}>
+          <SelectTrigger className="w-[120px] h-9 text-xs"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="spieler">Spieler</SelectItem>
+            <SelectItem value="trainer">Trainer</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button onClick={approve} disabled={busy} className="h-9 font-bold uppercase">
+          <CheckCircle2 className="size-4" /> Freischalten
+        </Button>
+        <Button
+          onClick={reject}
+          variant="ghost"
+          size="icon"
+          className="text-brand-red hover:bg-brand-red/10"
+          title="Ablehnen"
+        >
+          <Trash2 className="size-4" />
+        </Button>
+      </div>
+    </div>
   );
 }
