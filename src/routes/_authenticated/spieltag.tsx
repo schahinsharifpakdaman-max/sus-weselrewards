@@ -629,21 +629,21 @@ function MatchDetailDialog({
                     onCheckedChange={(v) => updateRow(r.profile_id, { gelb: !!v })}
                     disabled={dis}
                     className="data-[state=checked]:bg-yellow-500 data-[state=checked]:border-yellow-500"
-                    title="Gelb"
+                    title="Gelb (Unsportlichkeit, −5 €)"
                   />
                   <Checkbox
                     checked={r.gelbrot}
                     onCheckedChange={(v) => updateRow(r.profile_id, { gelbrot: !!v })}
                     disabled={dis}
                     className="data-[state=checked]:bg-orange-600 data-[state=checked]:border-orange-600"
-                    title="Gelb-Rot"
+                    title="Gelb-Rot (−5 €)"
                   />
                   <Checkbox
                     checked={r.rot}
                     onCheckedChange={(v) => updateRow(r.profile_id, { rot: !!v })}
                     disabled={dis}
                     className="data-[state=checked]:bg-brand-red data-[state=checked]:border-brand-red"
-                    title="Rot"
+                    title="Rot (Unsportlichkeit, keine Prämie)"
                   />
                   <Input
                     type="number"
