@@ -406,8 +406,10 @@ function MatchDetailDialog({
   const basePremium = ligapunkte * premPerLp;
   const missedOf = (r: { training1_present: boolean; training2_present: boolean }) =>
     (r.training1_present ? 0 : 1) + (r.training2_present ? 0 : 1);
-  const premiumFor = (r: { training1_present: boolean; training2_present: boolean }) =>
-    Math.max(basePremium - missedOf(r) * deduction, 0);
+  const cardDeductionOf = (r: { gelb: boolean; gelbrot: boolean }) =>
+    (r.gelb ? 5 : 0) + (r.gelbrot ? 5 : 0);
+  const premiumFor = (r: { training1_present: boolean; training2_present: boolean; gelb: boolean; gelbrot: boolean; rot: boolean }) =>
+    r.rot ? 0 : Math.max(basePremium - missedOf(r) * deduction - cardDeductionOf(r), 0);
   const totalPot = effective
     .filter((r) => r.nominated && r.played)
     .reduce((s, r) => s + premiumFor(r), 0);
@@ -579,9 +581,15 @@ function MatchDetailDialog({
                   )}
                   {!match.closed && r.nominated && (
                     <p className="text-[10px] text-black/40">
-                      {r.played ? `Prämie: ${premiumFor(r).toFixed(2)} €` : "Nicht eingesetzt — keine Prämie"}
-                      {r.played && missedOf(r) > 0 &&
+                      {!r.played
+                        ? "Nicht eingesetzt — keine Prämie"
+                        : r.rot
+                          ? "Rote Karte (Unsportlichkeit) — keine Prämie"
+                          : `Prämie: ${premiumFor(r).toFixed(2)} €`}
+                      {r.played && !r.rot && missedOf(r) > 0 &&
                         ` (${missedOf(r)}× Training gefehlt, −${(missedOf(r) * deduction).toFixed(0)} €)`}
+                      {r.played && !r.rot && cardDeductionOf(r) > 0 &&
+                        ` (Karte, −${cardDeductionOf(r)} €)`}
                     </p>
                   )}
                 </div>
