@@ -290,6 +290,8 @@ function MatchDetailDialog({
   canManage: boolean;
   onClose: () => void;
 }) {
+  const { data: myRole } = useMyRole();
+  const isAdmin = myRole === "admin";
   const qc = useQueryClient();
 
   const { data: settings } = useQuery({
@@ -514,7 +516,7 @@ function MatchDetailDialog({
               min={0}
               value={goalsFor}
               onChange={(e) => setGoalsFor(e.target.value)}
-              disabled={!canManage || match.closed}
+              disabled={!canManage || (match.closed && !isAdmin)}
             />
           </div>
           <div>
@@ -524,7 +526,7 @@ function MatchDetailDialog({
               min={0}
               value={goalsAgainst}
               onChange={(e) => setGoalsAgainst(e.target.value)}
-              disabled={!canManage || match.closed}
+              disabled={!canManage || (match.closed && !isAdmin)}
             />
           </div>
           <div>
@@ -532,7 +534,7 @@ function MatchDetailDialog({
             <Select
               value={String(ligapunkte)}
               onValueChange={(v) => setLigapunkte(Number(v))}
-              disabled={!canManage || match.closed}
+              disabled={!canManage || (match.closed && !isAdmin)}
             >
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -565,7 +567,7 @@ function MatchDetailDialog({
             <span>Nom · Eins · T1 · T2 · G · GR · R · Min</span>
           </div>
           {effective.map((r) => {
-            const dis = !canManage || match.closed;
+            const dis = !canManage || (match.closed && !isAdmin);
             return (
               <div key={r.profile_id} className="p-2 flex items-center gap-2">
                 <div className="min-w-0 flex-1">
@@ -661,7 +663,7 @@ function MatchDetailDialog({
           <Button variant="outline" onClick={exportCsv}>
             <Download className="size-4" /> CSV
           </Button>
-          {canManage && !match.closed && (
+          {canManage && (!match.closed || isAdmin) && (
             <>
               <Button variant="outline" onClick={saveAll}>
                 Speichern
