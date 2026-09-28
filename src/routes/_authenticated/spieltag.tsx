@@ -446,10 +446,10 @@ function MatchDetailDialog({
           rot: r.rot,
           late_minutes: r.late_minutes,
         }));
-      const { error } = await supabase
-        .from("match_participations")
-        .upsert(payload, { onConflict: "match_id,profile_id" });
-      if (error && payload.length > 0) return toast.error("Speichern fehlgeschlagen", { description: error.message });
+      const { error } = payload.length
+        ? await supabase.from("match_participations").upsert(payload, { onConflict: "match_id,profile_id" })
+        : { error: null };
+      if (error) return toast.error("Speichern fehlgeschlagen", { description: error.message });
     }
 
     toast.success("Gespeichert");
