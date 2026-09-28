@@ -27,6 +27,8 @@ export type Database = {
           premium_euro: number
           profile_id: string
           rot: boolean
+          training1_present: boolean
+          training2_present: boolean
           updated_at: string
         }
         Insert: {
@@ -41,6 +43,8 @@ export type Database = {
           premium_euro?: number
           profile_id: string
           rot?: boolean
+          training1_present?: boolean
+          training2_present?: boolean
           updated_at?: string
         }
         Update: {
@@ -55,6 +59,8 @@ export type Database = {
           premium_euro?: number
           profile_id?: string
           rot?: boolean
+          training1_present?: boolean
+          training2_present?: boolean
           updated_at?: string
         }
         Relationships: [
