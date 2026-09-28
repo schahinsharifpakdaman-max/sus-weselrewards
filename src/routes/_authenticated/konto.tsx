@@ -8,7 +8,7 @@ import { useMyProfile, useMyRole, useSession } from "@/hooks/use-session";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Undo2, Users } from "lucide-react";
+import { Pencil, Trash2, Undo2, Users } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -307,6 +307,28 @@ function AccountView({
     qc.invalidateQueries();
   }
 
+  async function editTx(t: { id: string; delta: number; applied_delta: number; comment: string | null }) {
+    const cur = t.applied_delta || t.delta;
+    const d = prompt("Neue Punkte (z. B. -10 oder 5):", String(cur));
+    if (d === null) return;
+    const n = parseInt(d, 10);
+    if (Number.isNaN(n)) return toast.error("Ungültige Zahl");
+    const c = prompt("Kommentar:", t.comment ?? "");
+    if (c === null) return;
+    const { error } = await supabase.from("point_transactions").update({ delta: n, comment: c || null }).eq("id", t.id);
+    if (error) return toast.error("Ändern fehlgeschlagen", { description: error.message });
+    toast.success("Buchung geändert");
+    qc.invalidateQueries();
+  }
+
+  async function deleteTx(id: string) {
+    if (!confirm("Diese Buchung endgültig löschen? Der Kontostand wird angepasst.")) return;
+    const { error } = await supabase.from("point_transactions").delete().eq("id", id);
+    if (error) return toast.error("Löschen fehlgeschlagen", { description: error.message });
+    toast.success("Buchung gelöscht");
+    qc.invalidateQueries();
+  }
+
   const balance = acc?.balance ?? 150;
 
   return (
@@ -342,6 +364,16 @@ function AccountView({
                     <div className={`font-display text-xl ${delta > 0 ? "text-status-success" : "text-brand-red"}`}>
                       {delta > 0 ? "+" : ""}{delta}
                     </div>
+                    {adminOnly && (
+                      <>
+                        <Button variant="ghost" size="icon" onClick={() => editTx(t)} title="Bearbeiten">
+                          <Pencil className="size-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => deleteTx(t.id)} title="Löschen">
+                          <Trash2 className="size-4" />
+                        </Button>
+                      </>
+                    )}
                     {adminOnly && t.kind !== "storno" && (
                       <Button variant="ghost" size="icon" onClick={() => storno(t)} title="Stornieren">
                         <Undo2 className="size-4" />

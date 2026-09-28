@@ -36,6 +36,13 @@
       "when": 1790601354255,
       "tag": "0004_restrict_reference_reads_to_approved",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790601464465,
+      "tag": "0005_admin_edit_point_transactions",
+      "breakpoints": true
     }
   ]
 }

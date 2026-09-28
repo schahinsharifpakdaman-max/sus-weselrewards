@@ -248,6 +248,8 @@ function TrainingDetailDialog({
   canManage: boolean;
   onClose: () => void;
 }) {
+  const { data: myRole } = useMyRole();
+  const isAdmin = myRole === "admin";
   const qc = useQueryClient();
 
   const { data: rows } = useQuery<AttendanceRow[]>({
@@ -376,7 +378,7 @@ function TrainingDetailDialog({
                   onValueChange={(v) =>
                     updateDraft(r.profile_id, { status: v as AttendanceStatus })
                   }
-                  disabled={!canManage || training.closed}
+                  disabled={!canManage || (training.closed && !isAdmin)}
                 >
                   <SelectTrigger className="h-8 w-[130px] text-xs">
                     <SelectValue />
@@ -401,7 +403,7 @@ function TrainingDetailDialog({
                           late_minutes: Math.max(0, Number(e.target.value) || 0),
                         })
                       }
-                      disabled={!canManage || training.closed}
+                      disabled={!canManage || (training.closed && !isAdmin)}
                       className="h-8 w-14 text-xs"
                     />
                     <span className="text-[10px] text-black/50">min</span>
@@ -423,14 +425,16 @@ function TrainingDetailDialog({
           </p>
         )}
 
-        {canManage && !training.closed && (
+        {canManage && (!training.closed || isAdmin) && (
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={save} disabled={draft.size === 0}>
               Speichern
             </Button>
-            <Button onClick={closeTraining} className="bg-brand-red hover:bg-brand-red/90">
+            {!training.closed && (
+<Button onClick={closeTraining} className="bg-brand-red hover:bg-brand-red/90">
               Abschließen & buchen
             </Button>
+)}
           </DialogFooter>
         )}
       </DialogContent>
