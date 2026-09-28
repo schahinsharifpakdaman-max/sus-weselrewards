@@ -23,6 +23,7 @@ export type Database = {
           late_minutes: number
           match_id: string
           nominated: boolean
+          played: boolean
           premium_euro: number
           profile_id: string
           rot: boolean
@@ -36,6 +37,7 @@ export type Database = {
           late_minutes?: number
           match_id: string
           nominated?: boolean
+          played?: boolean
           premium_euro?: number
           profile_id: string
           rot?: boolean
@@ -49,6 +51,7 @@ export type Database = {
           late_minutes?: number
           match_id?: string
           nominated?: boolean
+          played?: boolean
           premium_euro?: number
           profile_id?: string
           rot?: boolean

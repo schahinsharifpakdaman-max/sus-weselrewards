@@ -8,6 +8,13 @@
       "when": 1790592432670,
       "tag": "0000_matchday_premium_per_player_training_based",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790600275435,
+      "tag": "0001_add_played_to_participations",
+      "breakpoints": true
     }
   ]
 }
