@@ -293,9 +293,47 @@ function MatchDetailDialog({
     queryFn: async () => {
       const { data } = await supabase
         .from("season_settings")
-        .select("premium_per_ligapunkt, max_premium_players_per_matchday")
+        .select("premium_per_ligapunkt, max_premium_players_per_matchday, premium_deduction_per_missed_training")
         .maybeSingle();
-      return data ?? { premium_per_ligapunkt: 5, max_premium_players_per_matchday: 16 };
+      return data ?? { premium_per_ligapunkt: 5, max_premium_players_per_matchday: 16, premium_deduction_per_missed_training: 5 };
+    },
+  });
+
+  // Verpasste Trainings in der Spielwoche (Mo–So) je Spieler
+  const weekStart = useMemo(() => {
+    const d = new Date(match.scheduled_at);
+    const day = (d.getDay() + 6) % 7; // Montag = 0
+    d.setDate(d.getDate() - day);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, [match.scheduled_at]);
+  const weekEnd = useMemo(() => {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() + 7);
+    return d;
+  }, [weekStart]);
+
+  const { data: missedMap } = useQuery<Map<string, number>>({
+    queryKey: ["match-week-missed", match.id],
+    queryFn: async () => {
+      const { data: trainings } = await supabase
+        .from("trainings")
+        .select("id")
+        .eq("team_id", match.team_id)
+        .gte("scheduled_at", weekStart.toISOString())
+        .lt("scheduled_at", weekEnd.toISOString());
+      const ids = (trainings ?? []).map((t) => t.id);
+      if (ids.length === 0) return new Map<string, number>();
+      const { data: att } = await supabase
+        .from("training_attendance")
+        .select("profile_id, status")
+        .in("training_id", ids)
+        .in("status", ["unentschuldigt", "entschuldigt"]);
+      const map = new Map<string, number>();
+      for (const a of att ?? []) {
+        map.set(a.profile_id, (map.get(a.profile_id) ?? 0) + 1);
+      }
+      return map;
     },
   });
 
@@ -346,8 +384,13 @@ function MatchDetailDialog({
   const nomCount = effective.filter((r) => r.nominated).length;
   const cap = settings?.max_premium_players_per_matchday ?? 16;
   const premPerLp = Number(settings?.premium_per_ligapunkt ?? 5);
-  const totalPot = ligapunkte * premPerLp;
-  const perPlayer = nomCount > 0 ? Math.round((totalPot / nomCount) * 100) / 100 : 0;
+  const deduction = Number(settings?.premium_deduction_per_missed_training ?? 5);
+  const basePremium = ligapunkte * premPerLp;
+  const premiumFor = (pid: string) =>
+    Math.max(basePremium - (missedMap?.get(pid) ?? 0) * deduction, 0);
+  const totalPot = effective
+    .filter((r) => r.nominated)
+    .reduce((s, r) => s + premiumFor(r.profile_id), 0);
 
   function updateRow(pid: string, patch: Partial<PartRow>) {
     setDraft((prev) => {
@@ -483,12 +526,12 @@ function MatchDetailDialog({
             <p className="text-[9px] uppercase tracking-widest mt-1">Nominiert</p>
           </div>
           <div className="rounded-lg p-2 bg-brand-red/10 text-brand-red">
-            <p className="font-display text-lg leading-none">{totalPot.toFixed(0)} €</p>
-            <p className="text-[9px] uppercase tracking-widest mt-1">Prämientopf</p>
+            <p className="font-display text-lg leading-none">{basePremium.toFixed(0)} €</p>
+            <p className="text-[9px] uppercase tracking-widest mt-1">Max. pro Spieler</p>
           </div>
           <div className="rounded-lg p-2 bg-emerald-500/10 text-emerald-700">
-            <p className="font-display text-lg leading-none">{perPlayer.toFixed(2)} €</p>
-            <p className="text-[9px] uppercase tracking-widest mt-1">Pro Spieler</p>
+            <p className="font-display text-lg leading-none">{totalPot.toFixed(2)} €</p>
+            <p className="text-[9px] uppercase tracking-widest mt-1">Prämientopf</p>
           </div>
         </div>
 
@@ -506,6 +549,13 @@ function MatchDetailDialog({
                   {match.closed && r.premium_euro > 0 && (
                     <p className="text-[10px] text-emerald-700">
                       Prämie: {r.premium_euro.toFixed(2)} €
+                    </p>
+                  )}
+                  {!match.closed && r.nominated && (
+                    <p className="text-[10px] text-black/40">
+                      Prämie: {premiumFor(r.profile_id).toFixed(2)} €
+                      {(missedMap?.get(r.profile_id) ?? 0) > 0 &&
+                        ` (${missedMap!.get(r.profile_id)}× Training verpasst)`}
                     </p>
                   )}
                 </div>
