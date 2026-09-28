@@ -270,6 +270,7 @@ type PartRow = {
   is_trainer: boolean;
   participation_id: string | null;
   nominated: boolean;
+  played: boolean;
   gelb: boolean;
   gelbrot: boolean;
   rot: boolean;
@@ -362,6 +363,7 @@ function MatchDetailDialog({
             is_trainer: p.is_trainer,
             participation_id: x?.id ?? null,
             nominated: x?.nominated ?? false,
+            played: (x as { played?: boolean } | undefined)?.played ?? false,
             gelb: x?.gelb ?? false,
             gelbrot: x?.gelbrot ?? false,
             rot: x?.rot ?? false,
@@ -389,7 +391,7 @@ function MatchDetailDialog({
   const premiumFor = (pid: string) =>
     Math.max(basePremium - (missedMap?.get(pid) ?? 0) * deduction, 0);
   const totalPot = effective
-    .filter((r) => r.nominated)
+    .filter((r) => r.nominated && r.played)
     .reduce((s, r) => s + premiumFor(r.profile_id), 0);
 
   function updateRow(pid: string, patch: Partial<PartRow>) {
@@ -420,6 +422,7 @@ function MatchDetailDialog({
           match_id: match.id,
           profile_id: r.profile_id,
           nominated: r.nominated,
+          played: r.nominated && r.played,
           gelb: r.gelb,
           gelbrot: r.gelbrot,
           rot: r.rot,
@@ -448,13 +451,14 @@ function MatchDetailDialog({
   }
 
   function exportCsv() {
-    const header = "Spieler;Nominiert;Gelb;Gelb-Rot;Rot;Verspätung (Min);Prämie (€)";
+    const header = "Spieler;Nominiert;Eingesetzt;Gelb;Gelb-Rot;Rot;Verspätung (Min);Prämie (€)";
     const lines = effective
       .filter((r) => r.nominated || r.gelb || r.gelbrot || r.rot || r.late_minutes > 0)
       .map((r) =>
         [
           r.full_name,
           r.nominated ? "Ja" : "Nein",
+          r.nominated && r.played ? "Ja" : "Nein",
           r.gelb ? "Ja" : "",
           r.gelbrot ? "Ja" : "",
           r.rot ? "Ja" : "",
@@ -538,7 +542,7 @@ function MatchDetailDialog({
         <div className="divide-y divide-black/5 border border-black/5 rounded-xl">
           <div className="grid grid-cols-[1fr_auto] px-3 py-2 bg-black/5 text-[9px] uppercase tracking-widest text-black/50">
             <span>Spieler</span>
-            <span>Nom · G · GR · R · Min</span>
+            <span>Nom · Eins · G · GR · R · Min</span>
           </div>
           {effective.map((r) => {
             const dis = !canManage || match.closed;
@@ -553,7 +557,7 @@ function MatchDetailDialog({
                   )}
                   {!match.closed && r.nominated && (
                     <p className="text-[10px] text-black/40">
-                      Prämie: {premiumFor(r.profile_id).toFixed(2)} €
+                      {r.played ? `Prämie: ${premiumFor(r.profile_id).toFixed(2)} €` : "Nicht eingesetzt — keine Prämie"}
                       {(missedMap?.get(r.profile_id) ?? 0) > 0 &&
                         ` (${missedMap!.get(r.profile_id)}× Training verpasst)`}
                     </p>
@@ -562,9 +566,17 @@ function MatchDetailDialog({
                 <div className="flex items-center gap-1.5">
                   <Checkbox
                     checked={r.nominated}
-                    onCheckedChange={(v) => updateRow(r.profile_id, { nominated: !!v })}
+                    onCheckedChange={(v) => updateRow(r.profile_id, v ? { nominated: true } : { nominated: false, played: false })}
                     disabled={dis || (!r.nominated && nomCount >= cap)}
                     title="Nominiert"
+                  />
+                  <Checkbox
+                    checked={r.played}
+                    onCheckedChange={(v) => updateRow(r.profile_id, { played: !!v })}
+                    disabled={dis || !r.nominated}
+                    className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                    title="Eingesetzt"
+                    aria-label="Eingesetzt"
                   />
                   <Checkbox
                     checked={r.gelb}
