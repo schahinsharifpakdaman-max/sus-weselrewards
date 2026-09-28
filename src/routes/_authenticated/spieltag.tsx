@@ -299,7 +299,7 @@ function MatchDetailDialog({
         .from("season_settings")
         .select("premium_per_ligapunkt, max_premium_players_per_matchday, premium_deduction_per_missed_training")
         .maybeSingle();
-      return data ?? { premium_per_ligapunkt: 5, max_premium_players_per_matchday: 16, premium_deduction_per_missed_training: 5 };
+      return data ?? { premium_per_ligapunkt: 5, max_premium_players_per_matchday: 22, premium_deduction_per_missed_training: 5 };
     },
   });
 
@@ -398,7 +398,7 @@ function MatchDetailDialog({
   }, [rows, draft, missedMap]);
 
   const nomCount = effective.filter((r) => r.nominated).length;
-  const cap = settings?.max_premium_players_per_matchday ?? 16;
+  const cap = settings?.max_premium_players_per_matchday ?? 22;
   const premPerLp = Number(settings?.premium_per_ligapunkt ?? 5);
   const deduction = Number(settings?.premium_deduction_per_missed_training ?? 5);
   const basePremium = ligapunkte * premPerLp;
