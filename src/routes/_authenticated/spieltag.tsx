@@ -668,9 +668,11 @@ function MatchDetailDialog({
               <Button variant="outline" onClick={saveAll}>
                 Speichern
               </Button>
-              <Button onClick={closeMatch} className="bg-brand-red hover:bg-brand-red/90">
+              {!match.closed && (
+<Button onClick={closeMatch} className="bg-brand-red hover:bg-brand-red/90">
                 Abschließen & buchen
               </Button>
+)}
             </>
           )}
         </DialogFooter>

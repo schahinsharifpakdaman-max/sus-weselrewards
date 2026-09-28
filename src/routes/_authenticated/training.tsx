@@ -430,9 +430,11 @@ function TrainingDetailDialog({
             <Button variant="outline" onClick={save} disabled={draft.size === 0}>
               Speichern
             </Button>
-            <Button onClick={closeTraining} className="bg-brand-red hover:bg-brand-red/90">
+            {!training.closed && (
+<Button onClick={closeTraining} className="bg-brand-red hover:bg-brand-red/90">
               Abschließen & buchen
             </Button>
+)}
           </DialogFooter>
         )}
       </DialogContent>
