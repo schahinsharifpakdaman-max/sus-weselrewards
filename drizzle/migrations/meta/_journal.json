@@ -43,6 +43,13 @@
       "when": 1790601464465,
       "tag": "0005_admin_edit_point_transactions",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790602879709,
+      "tag": "0006_card_premium_deductions",
+      "breakpoints": true
     }
   ]
 }
