@@ -526,12 +526,12 @@ function MatchDetailDialog({
             <p className="text-[9px] uppercase tracking-widest mt-1">Nominiert</p>
           </div>
           <div className="rounded-lg p-2 bg-brand-red/10 text-brand-red">
-            <p className="font-display text-lg leading-none">{totalPot.toFixed(0)} €</p>
-            <p className="text-[9px] uppercase tracking-widest mt-1">Prämientopf</p>
+            <p className="font-display text-lg leading-none">{basePremium.toFixed(0)} €</p>
+            <p className="text-[9px] uppercase tracking-widest mt-1">Max. pro Spieler</p>
           </div>
           <div className="rounded-lg p-2 bg-emerald-500/10 text-emerald-700">
-            <p className="font-display text-lg leading-none">{perPlayer.toFixed(2)} €</p>
-            <p className="text-[9px] uppercase tracking-widest mt-1">Pro Spieler</p>
+            <p className="font-display text-lg leading-none">{totalPot.toFixed(2)} €</p>
+            <p className="text-[9px] uppercase tracking-widest mt-1">Prämientopf</p>
           </div>
         </div>
 
@@ -549,6 +549,13 @@ function MatchDetailDialog({
                   {match.closed && r.premium_euro > 0 && (
                     <p className="text-[10px] text-emerald-700">
                       Prämie: {r.premium_euro.toFixed(2)} €
+                    </p>
+                  )}
+                  {!match.closed && r.nominated && (
+                    <p className="text-[10px] text-black/40">
+                      Prämie: {premiumFor(r.profile_id).toFixed(2)} €
+                      {(missedMap?.get(r.profile_id) ?? 0) > 0 &&
+                        ` (${missedMap!.get(r.profile_id)}× Training verpasst)`}
                     </p>
                   )}
                 </div>
