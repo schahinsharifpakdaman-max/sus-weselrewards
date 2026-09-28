@@ -271,6 +271,9 @@ type PartRow = {
   participation_id: string | null;
   nominated: boolean;
   played: boolean;
+  training1_present: boolean;
+  training2_present: boolean;
+  has_saved: boolean;
   gelb: boolean;
   gelbrot: boolean;
   rot: boolean;
@@ -363,7 +366,10 @@ function MatchDetailDialog({
             is_trainer: p.is_trainer,
             participation_id: x?.id ?? null,
             nominated: x?.nominated ?? false,
-            played: (x as { played?: boolean } | undefined)?.played ?? false,
+            played: x?.played ?? false,
+            training1_present: x?.training1_present ?? true,
+            training2_present: x?.training2_present ?? true,
+            has_saved: !!x,
             gelb: x?.gelb ?? false,
             gelbrot: x?.gelbrot ?? false,
             rot: x?.rot ?? false,
@@ -380,19 +386,29 @@ function MatchDetailDialog({
   const [goalsAgainst, setGoalsAgainst] = useState<string>(match.goals_against?.toString() ?? "");
 
   const effective = useMemo(() => {
-    return (rows ?? []).map((r) => ({ ...r, ...(draft.get(r.profile_id) ?? {}) }));
-  }, [rows, draft]);
+    return (rows ?? []).map((r) => {
+      const base = { ...r };
+      if (!r.has_saved) {
+        const m = missedMap?.get(r.profile_id) ?? 0;
+        base.training1_present = m < 1;
+        base.training2_present = m < 2;
+      }
+      return { ...base, ...(draft.get(r.profile_id) ?? {}) };
+    });
+  }, [rows, draft, missedMap]);
 
   const nomCount = effective.filter((r) => r.nominated).length;
   const cap = settings?.max_premium_players_per_matchday ?? 16;
   const premPerLp = Number(settings?.premium_per_ligapunkt ?? 5);
   const deduction = Number(settings?.premium_deduction_per_missed_training ?? 5);
   const basePremium = ligapunkte * premPerLp;
-  const premiumFor = (pid: string) =>
-    Math.max(basePremium - (missedMap?.get(pid) ?? 0) * deduction, 0);
+  const missedOf = (r: { training1_present: boolean; training2_present: boolean }) =>
+    (r.training1_present ? 0 : 1) + (r.training2_present ? 0 : 1);
+  const premiumFor = (r: { training1_present: boolean; training2_present: boolean }) =>
+    Math.max(basePremium - missedOf(r) * deduction, 0);
   const totalPot = effective
     .filter((r) => r.nominated && r.played)
-    .reduce((s, r) => s + premiumFor(r.profile_id), 0);
+    .reduce((s, r) => s + premiumFor(r), 0);
 
   function updateRow(pid: string, patch: Partial<PartRow>) {
     setDraft((prev) => {
@@ -415,14 +431,16 @@ function MatchDetailDialog({
       .eq("id", match.id);
     if (mErr) return toast.error("Spiel-Speichern fehlgeschlagen", { description: mErr.message });
 
-    if (draft.size > 0) {
+    {
       const payload = effective
-        .filter((r) => draft.has(r.profile_id))
+        .filter((r) => draft.has(r.profile_id) || (!r.has_saved && r.nominated))
         .map((r) => ({
           match_id: match.id,
           profile_id: r.profile_id,
           nominated: r.nominated,
           played: r.nominated && r.played,
+          training1_present: r.training1_present,
+          training2_present: r.training2_present,
           gelb: r.gelb,
           gelbrot: r.gelbrot,
           rot: r.rot,
@@ -431,7 +449,7 @@ function MatchDetailDialog({
       const { error } = await supabase
         .from("match_participations")
         .upsert(payload, { onConflict: "match_id,profile_id" });
-      if (error) return toast.error("Speichern fehlgeschlagen", { description: error.message });
+      if (error && payload.length > 0) return toast.error("Speichern fehlgeschlagen", { description: error.message });
     }
 
     toast.success("Gespeichert");
@@ -451,7 +469,7 @@ function MatchDetailDialog({
   }
 
   function exportCsv() {
-    const header = "Spieler;Nominiert;Eingesetzt;Gelb;Gelb-Rot;Rot;Verspätung (Min);Prämie (€)";
+    const header = "Spieler;Nominiert;Eingesetzt;Training 1;Training 2;Gelb;Gelb-Rot;Rot;Verspätung (Min);Prämie (€)";
     const lines = effective
       .filter((r) => r.nominated || r.gelb || r.gelbrot || r.rot || r.late_minutes > 0)
       .map((r) =>
@@ -459,6 +477,8 @@ function MatchDetailDialog({
           r.full_name,
           r.nominated ? "Ja" : "Nein",
           r.nominated && r.played ? "Ja" : "Nein",
+          r.training1_present ? "Da" : "Gefehlt",
+          r.training2_present ? "Da" : "Gefehlt",
           r.gelb ? "Ja" : "",
           r.gelbrot ? "Ja" : "",
           r.rot ? "Ja" : "",
@@ -542,7 +562,7 @@ function MatchDetailDialog({
         <div className="divide-y divide-black/5 border border-black/5 rounded-xl">
           <div className="grid grid-cols-[1fr_auto] px-3 py-2 bg-black/5 text-[9px] uppercase tracking-widest text-black/50">
             <span>Spieler</span>
-            <span>Nom · Eins · G · GR · R · Min</span>
+            <span>Nom · Eins · T1 · T2 · G · GR · R · Min</span>
           </div>
           {effective.map((r) => {
             const dis = !canManage || match.closed;
@@ -557,9 +577,9 @@ function MatchDetailDialog({
                   )}
                   {!match.closed && r.nominated && (
                     <p className="text-[10px] text-black/40">
-                      {r.played ? `Prämie: ${premiumFor(r.profile_id).toFixed(2)} €` : "Nicht eingesetzt — keine Prämie"}
-                      {(missedMap?.get(r.profile_id) ?? 0) > 0 &&
-                        ` (${missedMap!.get(r.profile_id)}× Training verpasst)`}
+                      {r.played ? `Prämie: ${premiumFor(r).toFixed(2)} €` : "Nicht eingesetzt — keine Prämie"}
+                      {r.played && missedOf(r) > 0 &&
+                        ` (${missedOf(r)}× Training gefehlt, −${(missedOf(r) * deduction).toFixed(0)} €)`}
                     </p>
                   )}
                 </div>
@@ -577,6 +597,22 @@ function MatchDetailDialog({
                     className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                     title="Eingesetzt"
                     aria-label="Eingesetzt"
+                  />
+                  <Checkbox
+                    checked={r.training1_present}
+                    onCheckedChange={(v) => updateRow(r.profile_id, { training1_present: !!v })}
+                    disabled={dis}
+                    className="data-[state=checked]:bg-sky-600 data-[state=checked]:border-sky-600"
+                    title="Trainingstag 1 anwesend"
+                    aria-label="Trainingstag 1 anwesend"
+                  />
+                  <Checkbox
+                    checked={r.training2_present}
+                    onCheckedChange={(v) => updateRow(r.profile_id, { training2_present: !!v })}
+                    disabled={dis}
+                    className="data-[state=checked]:bg-sky-600 data-[state=checked]:border-sky-600"
+                    title="Trainingstag 2 anwesend"
+                    aria-label="Trainingstag 2 anwesend"
                   />
                   <Checkbox
                     checked={r.gelb}
